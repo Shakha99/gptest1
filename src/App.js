@@ -4,6 +4,8 @@ import axios from 'axios';
 import dayjs from 'dayjs';
 import { useTranslation } from 'react-i18next';
 
+const API_URL = 'https://backend-repo-f9q0.onrender.com'; // Новый URL бэкенда
+
 function App() {
   const initDataRaw = useRawInitData();
   const { t, i18n } = useTranslation();
@@ -14,12 +16,12 @@ function App() {
 
   useEffect(() => {
     if (initDataRaw) {
-      axios.post('/api/auth', { initData: initDataRaw }).then(res => setUser(res.data.user));
+      axios.post(`${API_URL}/api/auth`, { initData: initDataRaw }).then(res => setUser(res.data.user));
     }
   }, [initDataRaw]);
 
   const handleParticipate = (ref) => {
-    axios.post('/api/participate', { tg_id: user.tg_id, ref_code: ref }).then(res => {
+    axios.post(`${API_URL}/api/participate`, { tg_id: user.tg_id, ref_code: ref }).then(res => {
       setGroup(res.data);
       setTimeLeft(res.data.timeLeft / 1000);
     });
@@ -30,18 +32,18 @@ function App() {
       const interval = setInterval(() => setTimeLeft(t => t - 1), 1000);
       return () => clearInterval(interval);
     } else if (group) {
-      axios.get(`/api/group/${group.groupId}`).then(res => setGroup(res.data));
+      axios.get(`${API_URL}/api/group/${group.groupId}`).then(res => setGroup(res.data));
     }
   }, [timeLeft, group]);
 
   const handleInvite = () => {
-    axios.get(`/api/invites/${user.tg_id}`).then(res => {
+    axios.get(`${API_URL}/api/invites/${user.tg_id}`).then(res => {
       window.Telegram.WebApp.openTelegramLink(res.data.links[0]);
     });
   };
 
   const handlePay = (provider) => {
-    axios.post('/api/payment/init', { group_id: group.groupId, user_tg_id: user.tg_id, provider }).then(res => {
+    axios.post(`${API_URL}/api/payment/init`, { group_id: group.groupId, user_tg_id: user.tg_id, provider }).then(res => {
       window.Telegram.WebApp.openLink(res.data.payment_url);
     });
   };
@@ -49,7 +51,7 @@ function App() {
   const switchLang = () => {
     const newLang = i18n.language === 'ru' ? 'uz' : 'ru';
     i18n.changeLanguage(newLang);
-    axios.post('/api/language', { tg_id: user.tg_id, lang: newLang });
+    axios.post(`${API_URL}/api/language`, { tg_id: user.tg_id, lang: newLang });
   };
 
   if (!user) return <div className="bg-gradient-to-r from-blue-500 to-purple-500 h-screen flex items-center justify-center text-white">Loading...</div>;
